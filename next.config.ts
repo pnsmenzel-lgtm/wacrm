@@ -65,6 +65,23 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   /**
+   * Emit a self-contained `.next/standalone` bundle (server.js + only the
+   * traced node_modules) so the Docker image can run without a full
+   * `npm install` at runtime. See the Dockerfile.
+   */
+  output: "standalone",
+
+  /**
+   * The locale dictionaries are pulled in via a *dynamic* `import(
+   * `../../messages/${locale}.json`)` in src/i18n/request.ts. A template-
+   * literal import can't be statically traced by @vercel/nft, so force the
+   * JSON files into the standalone trace or next-intl 404s at runtime.
+   */
+  outputFileTracingIncludes: {
+    "/**": ["./messages/**/*.json"],
+  },
+
+  /**
    * Cache-Control policy.
    *
    * Why this exists:
